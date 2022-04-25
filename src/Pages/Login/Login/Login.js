@@ -12,6 +12,7 @@ import { ToastContainer, toast } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
 import PageTitle from "../../Shared/PageTitle/PageTitle";
+import axios from "axios";
 
 const Login = () => {
   const emailRef = useRef("");
@@ -21,17 +22,22 @@ const Login = () => {
   const navigate = useNavigate();
   let errorElement;
 
-  const [signInWithEmailAndPassword, user, loading, error] =
+  const [signInWithEmailAndPassword, user, error] =
     useSignInWithEmailAndPassword(auth);
-  const [sendPasswordResetEmail, sending, error1] =
+  const [sendPasswordResetEmail, error1] =
     useSendPasswordResetEmail(auth);
+   
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const email = emailRef.current.value;
     const pass = passRef.current.value;
-    signInWithEmailAndPassword(email, pass);
+     await signInWithEmailAndPassword(email, pass);
+     const {data} = await axios.post('http://localhost:5000/login', {email});
+     localStorage.setItem('accessToken', data.accessToken)
+     navigate(from, { replace: true });
+
   };
   const handleResetPassword = async (event) => {
     const email = emailRef.current.value;
@@ -46,7 +52,7 @@ const Login = () => {
   const handleToSignup = (event) => {
     navigate("/signup");
   };
-  if (error) {
+  if (error || error1) {
     errorElement = (
       <div>
         <p className="text-danger">Error: {error?.message}</p>
@@ -54,7 +60,7 @@ const Login = () => {
     );
   }
   if (user) {
-    navigate(from, { replace: true });
+    // navigate(from, { replace: true });
   }
   return (
     <div className="container w-50 mx-auto">
